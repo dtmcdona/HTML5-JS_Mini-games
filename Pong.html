@@ -1,0 +1,82 @@
+<canvas id="gameCanvas" width="640" height="480"></canvas>
+<script type="text/javascript">
+	player1y = player2y = 40;
+	paddleThickness = 20;
+	paddleHeight = 100;
+	ballx = bally = 50;
+	ballDiameter = 6;
+	xVelocity = yVelocity = 10;
+	scorePlayer1 = scorePlayer2 = 0;
+	AISpeed = 5;
+	window.onload=function() {
+		canvas = document.getElementById('gameCanvas');
+		canvasContext = canvas.getContext('2d');
+		canvasContext.font = "48px serif";
+		setInterval(update,1000/30); 
+		canvas.addEventListener('mousemove',function(e) {
+			player1y = e.clientY-paddleHeight/2;
+		});
+	}
+	function reset() {
+		ballx = canvas.width/2;
+		bally = canvas.height/2;
+		xVelocity = 10;
+		xVelocity = -xVelocity;
+		yVelocity = 3;
+	}
+	function AI() {
+		if((player2y+paddleHeight/2)+AISpeed<bally) {
+			player2y += AISpeed;
+		}
+		else if((player2y+paddleHeight/2)-AISpeed>bally) {
+			player2y -= AISpeed;
+		}
+	}
+	function update() {
+		//AI move
+		AI();
+		//Move ball
+		ballx += xVelocity;
+		bally += yVelocity;
+
+		//Bounce ball off top and bottom
+		if(bally<ballDiameter && yVelocity<0)
+			yVelocity = -yVelocity;
+		else if(bally>canvas.height-ballDiameter && yVelocity>0)
+			yVelocity = -yVelocity;
+
+		if(ballx<0) {
+			if(bally>player1y && bally<player1y+paddleHeight) {
+				xVelocity -= 1;
+				xVelocity = -xVelocity;
+				deltaY = bally-(player1y+paddleHeight/2);
+				yVelocity = deltaY*0.5;
+			} else {
+				scorePlayer2++;
+				//AISpeed--;//if you wanted to make AI slower
+				reset();
+			}
+		}
+		if(ballx>canvas.width) {
+			if(bally>player2y && bally<player2y+paddleHeight) {
+				xVelocity += 1;
+				xVelocity = -xVelocity;
+				deltaY = bally-(player2y+paddleHeight/2);
+				yVelocity = deltaY*0.5;
+			} else {
+				scorePlayer1++;
+				AISpeed++;
+				reset();
+			}
+		}
+		//Draw everything
+		canvasContext.fillStyle='black';
+		canvasContext.fillRect(0,0,canvas.width,canvas.height);
+		canvasContext.fillStyle='green';
+		canvasContext.fillRect(0,player1y,paddleThickness,paddleHeight);
+		canvasContext.fillRect(canvas.width-paddleThickness,player2y,paddleThickness,paddleHeight);
+		canvasContext.fillRect(ballx-ballDiameter/2,bally-ballDiameter/2,ballDiameter,ballDiameter);
+		canvasContext.fillText(scorePlayer1,(canvas.width/2)-200,100);
+		canvasContext.fillText(scorePlayer2,(canvas.width/2)+200,100);
+	}
+</script>

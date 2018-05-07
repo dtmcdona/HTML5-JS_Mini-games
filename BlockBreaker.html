@@ -1,0 +1,89 @@
+<canvas id="gameCanvas" width="640" height="480"></canvas>
+<script type="text/javascript">
+	player1x = 320;
+	player1y = 460;
+	paddleWidth = 100;
+	paddleHeight = 20;
+	ballx = bally = 50;
+	ballDiameter = 6;
+	xVelocity = 5;
+	yVelocity = 2;
+	scorePlayer1 = 0;
+	window.onload=function() {
+		canvas = document.getElementById('gameCanvas');
+		canvasContext = canvas.getContext('2d');
+		canvasContext.font = "48px serif";
+		setInterval(update,1000/30); 
+		canvas.addEventListener('mousemove',function(e) {
+			player1x = e.clientX-paddleWidth/2;
+		});
+		reset();
+	}
+	function reset() {
+		ballx = canvas.width/2;
+		bally = canvas.height/2;
+		xVelocity = -2;
+		yVelocity = 5;
+		scorePlayer1 = 0;
+		blocksHeight = 20;
+		blocksX = [0,canvas.width/6, canvas.width*2/6, canvas.width*3/6, canvas.width*4/6, canvas.width*5/6,0,canvas.width/6, canvas.width*2/6, canvas.width*3/6, canvas.width*4/6, canvas.width*5/6,0,canvas.width/6, canvas.width*2/6, canvas.width*3/6, canvas.width*4/6, canvas.width*5/6];
+		blocksY = [0,0,0,0,0,0,blocksHeight,blocksHeight,blocksHeight,blocksHeight,blocksHeight,blocksHeight,blocksHeight*2,blocksHeight*2,blocksHeight*2,blocksHeight*2,blocksHeight*2,blocksHeight*2];
+		blockWidth = canvas.width/6;
+	}
+	function update() {
+		//If block hit then destroy and bounce
+		for(var i = 0;i<blocksX.length;i++) {
+			if(bally<blocksY[i]) {
+				if(ballx>blocksX[i] && ballx<blocksX[i]+blockWidth) {
+					yVelocity -= 2;
+					yVelocity = -yVelocity;
+					//deltaX = ballx-(blocksX[i]+blockWidth/2);
+					//xVelocity = deltaX*0.5;
+					blocksX[i] = -200;
+					blocksY[i] = -200;
+					scorePlayer1++;
+				}
+			}
+		}
+		//If player hits the ball
+		if(bally>=canvas.height-paddleHeight) {
+			if(ballx>=player1x && ballx<=player1x+paddleWidth) {
+				//yVelocity += 1;
+				yVelocity = -yVelocity;
+				deltaX = ballx-(player1x+paddleHeight/2);
+				xVelocity = deltaX*(Math.random() * .5 - 0.25);
+			}
+		}
+		//Bounce ball off top, left and right... if ball touches bottom then reset game
+		if(bally<0 && yVelocity<0)
+			yVelocity = -yVelocity;
+		else if(bally>canvas.height-ballDiameter && yVelocity>0)
+			reset();
+		if(ballx<0) {
+			xVelocity = -xVelocity;
+		} else if(ballx>canvas.width) {
+			xVelocity = -xVelocity;
+		}
+		//Draw everything
+		canvasContext.fillStyle='black';
+		canvasContext.fillRect(0,0,canvas.width,canvas.height);
+		canvasContext.fillStyle='green';
+		canvasContext.fillRect(player1x,player1y,paddleWidth,paddleHeight);
+		num_left = blocksX.length;
+		for(var i = 0;i<blocksX.length;i++) {
+			canvasContext.fillRect(blocksX[i],blocksY[i],blockWidth,blocksHeight);
+			if(blocksX[i] == -200)
+				num_left--;
+		}
+		if(num_left <= 0) {
+			canvasContext.fillText("YOU WON!",200,200);
+			ballx = canvas.width/2;
+			bally = 300;
+		} else {
+			//Move ball
+			ballx += xVelocity;
+			bally += yVelocity;
+			canvasContext.fillRect(ballx-ballDiameter/2,bally-ballDiameter/2,ballDiameter,ballDiameter);
+		}
+	}
+</script>
